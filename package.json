@@ -11,8 +11,9 @@
     "node-cron": "^3.0.3",
     "axios": "^1.6.0",
     "form-data": "^4.0.0",
-    "fluent-ffmpeg": "^2.1.2",
-    "canvas": "^2.11.2",
-    "fs-extra": "^11.2.0"
+    "fs-extra": "^11.2.0",
+    "sharp": "^0.33.2",
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "fluent-ffmpeg": "^2.1.2"
   }
 }
