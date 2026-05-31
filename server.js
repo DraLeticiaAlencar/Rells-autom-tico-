@@ -111,15 +111,15 @@ async function gerarVideo(texto, audioPath, s) {
       .input(audioPath)
       .input(musicPath)
       .outputOptions([
-        "-filter_complex", "[1:a]volume=1.0[voz];[2:a]volume=0.3[musica];[voz][musica]amix=inputs=2:duration=first[aout]",
-        "-map", "0:v",
-        "-map", "[aout]",
-        "-shortest",
-        "-c:v", "libx264",
-        "-c:a", "aac",
-        "-pix_fmt", "yuv420p",
-        `-vf`, `drawtext=text='${textoLegenda}':fontcolor=white:fontsize=40:x=(w-text_w)/2:y=h-100:box=1:boxcolor=black@0.5:boxborderw=10`
-      ])
+  "-filter_complex",
+  `[1:a]volume=1.0[a1];[2:a]volume=0.3[a2];[a1][a2]amix=inputs=2[aout];[0:v]drawtext=text='${textoLegenda}':fontcolor=white:fontsize=40:fontfamily=Arial:x=(w-text_w)/2:y=h-150:box=1:boxcolor=black@0.6:boxborderw=10[vout]`,
+  "-map", "[vout]",
+  "-map", "[aout]",
+  "-shortest",
+  "-c:v", "libx264",
+  "-c:a", "aac",
+  "-pix_fmt", "yuv420p"
+])
       .output(videoPath)
       .on("end", () => {
         adicionarHistorico({ status: "Video Pronto", details: "Vídeo renderizado com sucesso." });
