@@ -78,24 +78,13 @@ async function gerarRoteiro(s) {
 }
 
 async function gerarAudio(texto, s) {
-  if (!s.eleven_key || !s.eleven_voice_id) throw new Error("ElevenLabs Key ou Voice ID não configurados.");
-  adicionarHistorico({ status: "Gerando Audio", details: "Sintetizando voz no ElevenLabs..." });
-  try {
-    const r = await axios.post(
-      `https://api.elevenlabs.io/v1/text-to-speech/${s.eleven_voice_id}`,
-      { text: texto, model_id: "eleven_multilingual_v2", voice_settings: { stability: 0.45, similarity_boost: 0.80 } },
-      { headers: { "xi-api-key": s.eleven_key, "Content-Type": "application/json" }, responseType: "arraybuffer", timeout: 60000 }
-    );
-    const audioPath = `./videos/audio_${Date.now()}.mp3`;
-    fs.writeFileSync(audioPath, Buffer.from(r.data));
-    adicionarHistorico({ status: "Audio Pronto", details: "Voz gerada com sucesso." });
-    return audioPath;
-  } catch (e) {
-    const msg = e.response ? `Status ${e.response.status}` : e.message;
-    throw new Error(`ElevenLabs: ${msg}`);
-  }
+  adicionarHistorico({ status: "Gerando Audio", details: "Sintetizando voz..." });
+  const audioPath = `./videos/audio_${Date.now()}.mp3`;
+  const textoSeguro = texto.replace(/'/g, " ");
+  execSync(`python3 -c "from gtts import gTTS; tts = gTTS('${textoSeguro}', lang='pt'); tts.save('${audioPath}')"`, { timeout: 30000 });
+  adicionarHistorico({ status: "Audio Pronto", details: "Voz gerada com sucesso." });
+  return audioPath;
 }
-
 async function gerarVideo(texto, audioPath, s) {
   adicionarHistorico({ status: "Gerando Video", details: "Renderizando vídeo com FFmpeg..." });
   const videoPath = `./videos/video_${Date.now()}.mp4`;
