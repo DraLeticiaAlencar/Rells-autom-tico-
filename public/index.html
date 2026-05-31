@@ -85,7 +85,7 @@
             <div class="card">
                 <div class="card-title">⚙️ Configurações das APIs</div>
                 <div class="row-2">
-                    <div><label>OpenAI API Key</label><input type="password" id="openai_key" placeholder="sk-..."></div>
+                    <div><label>Groq API Key</label><input type="password" id="groq_key" placeholder="gsk_..."></div>
                     <div><label>ElevenLabs API Key</label><input type="password" id="eleven_key" placeholder="Sua chave ElevenLabs"></div>
                 </div>
                 <div class="row-2">
@@ -130,7 +130,7 @@ let cfg={};
 async function carregarDados(){
     try{
         const res=await fetch("/api/settings");cfg=await res.json();
-        document.getElementById("openai_key").value=cfg.openai_key||"";
+        document.getElementById("groq_key").value=cfg.groq_key||"";
         document.getElementById("eleven_key").value=cfg.eleven_key||"";
         document.getElementById("eleven_voice").value=cfg.eleven_voice_id||"";
         document.getElementById("server_domain").value=cfg.server_domain||"";
