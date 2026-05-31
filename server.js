@@ -80,8 +80,10 @@ async function gerarRoteiro(s) {
 async function gerarAudio(texto, s) {
   adicionarHistorico({ status: "Gerando Audio", details: "Sintetizando voz..." });
   const audioPath = `./videos/audio_${Date.now()}.mp3`;
-  const textoSeguro = texto.replace(/'/g, " ");
-  execSync(`python3 -c "from gtts import gTTS; tts = gTTS('${textoSeguro}', lang='pt'); tts.save('${audioPath}')"`, { timeout: 30000 });
+  const gTTS = require("node-gtts")("pt");
+  await new Promise((resolve, reject) => {
+    gTTS.save(audioPath, texto, (err) => err ? reject(err) : resolve());
+  });
   adicionarHistorico({ status: "Audio Pronto", details: "Voz gerada com sucesso." });
   return audioPath;
 }
