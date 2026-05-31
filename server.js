@@ -3,8 +3,8 @@ const cron = require("node-cron");
 const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
-const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
 const { execSync } = require("child_process");
+const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
 const ffmpeg = require("fluent-ffmpeg");
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
@@ -80,11 +80,11 @@ async function gerarRoteiro(s) {
 async function gerarAudio(texto, s) {
   adicionarHistorico({ status: "Gerando Audio", details: "Sintetizando voz..." });
   const audioPath = `./videos/audio_${Date.now()}.mp3`;
-  const { execSync } = require("child_process");
   execSync(`npx edge-tts --voice pt-BR-FranciscaNeural --text "${texto.replace(/"/g, ' ')}" --write-media ${audioPath}`, { timeout: 30000 });
   adicionarHistorico({ status: "Audio Pronto", details: "Voz gerada com sucesso." });
   return audioPath;
 }
+
 async function baixarMusica() {
   const musicPath = "./videos/musica.mp3";
   if (fs.existsSync(musicPath)) return musicPath;
@@ -98,23 +98,27 @@ async function baixarMusica() {
   fs.writeFileSync(musicPath, Buffer.from(r.data));
   return musicPath;
 }
-  async function gerarVideo(texto, audioPath, s) {
+
+async function gerarVideo(texto, audioPath, s) {
   adicionarHistorico({ status: "Gerando Video", details: "Renderizando vídeo com FFmpeg..." });
   const videoPath = `./videos/video_${Date.now()}.mp4`;
   const textoLegenda = texto.replace(/'/g, " ").replace(/:/g, "\\:");
+  const musicPath = await baixarMusica();
   return new Promise((resolve, reject) => {
     ffmpeg()
       .input("color=c=black:s=720x1280:r=24")
       .inputFormat("lavfi")
       .input(audioPath)
+      .input(musicPath)
       .outputOptions([
-        "-map 0:v",
-        "-map 1:a",
+        "-filter_complex", "[1:a]volume=1.0[voz];[2:a]volume=0.3[musica];[voz][musica]amix=inputs=2:duration=first[aout]",
+        "-map", "0:v",
+        "-map", "[aout]",
         "-shortest",
-        "-c:v libx264",
-        "-c:a aac",
-        "-pix_fmt yuv420p",
-        `-vf drawtext=text='${textoLegenda}':fontcolor=white:fontsize=40:x=(w-text_w)/2:y=h-100:box=1:boxcolor=black@0.5:boxborderw=10`
+        "-c:v", "libx264",
+        "-c:a", "aac",
+        "-pix_fmt", "yuv420p",
+        `-vf`, `drawtext=text='${textoLegenda}':fontcolor=white:fontsize=40:x=(w-text_w)/2:y=h-100:box=1:boxcolor=black@0.5:boxborderw=10`
       ])
       .output(videoPath)
       .on("end", () => {
@@ -125,6 +129,8 @@ async function baixarMusica() {
       .run();
   });
 }
+
+async function publicarInstagram(videoPath, texto, s) {
   if (!s.instagram_token || !s.instagram_account_id || !s.server_domain) throw new Error("Configurações do Instagram incompletas.");
   adicionarHistorico({ status: "Publicando", details: "Enviando para o Instagram..." });
   try {
