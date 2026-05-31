@@ -32,7 +32,14 @@ const DEFAULT_SETTINGS = {
 
 function lerSettings() {
   if (!fs.existsSync(SETTINGS_FILE)) fs.writeJsonSync(SETTINGS_FILE, DEFAULT_SETTINGS, { spaces: 2 });
-  return fs.readJsonSync(SETTINGS_FILE);
+  const s = fs.readJsonSync(SETTINGS_FILE);
+  if (process.env.GROQ_KEY) s.groq_key = process.env.GROQ_KEY;
+  if (process.env.ELEVEN_KEY) s.eleven_key = process.env.ELEVEN_KEY;
+  if (process.env.ELEVEN_VOICE_ID) s.eleven_voice_id = process.env.ELEVEN_VOICE_ID;
+  if (process.env.INSTAGRAM_TOKEN) s.instagram_token = process.env.INSTAGRAM_TOKEN;
+  if (process.env.INSTAGRAM_ACCOUNT_ID) s.instagram_account_id = process.env.INSTAGRAM_ACCOUNT_ID;
+  if (process.env.SERVER_DOMAIN) s.server_domain = process.env.SERVER_DOMAIN;
+  return s;
 }
 
 function salvarSettings(d) { fs.writeJsonSync(SETTINGS_FILE, d, { spaces: 2 }); }
