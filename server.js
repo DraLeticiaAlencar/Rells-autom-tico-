@@ -57,7 +57,7 @@ async function gerarRoteiro(s) {
   try {
     const r = await axios.post(
       "https://api.groq.com/openai/v1/chat/completions",
-      { model: "llama3-8b-8192", messages: [{ role: "user", content: s.prompt_base }], max_tokens: 60, temperature: 0.9 },
+      { model: "llama-3.3-70b-versatile", messages: [{ role: "user", content: s.prompt_base }], max_tokens: 60, temperature: 0.9 },
       { headers: { Authorization: `Bearer ${s.groq_key}` }, timeout: 30000 }
     );
     const roteiro = r.data.choices[0].message.content.trim().toUpperCase();
