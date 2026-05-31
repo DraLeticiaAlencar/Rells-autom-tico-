@@ -52,28 +52,40 @@ app.post("/api/force-trigger", async (req, res) => {
 });
 
 async function gerarRoteiro(s) {
+  if (!s.groq_key) throw new Error("Groq API Key não configurada.");
   adicionarHistorico({ status: "Gerando Roteiro", details: "Pedindo roteiro para a IA..." });
-  const r = await axios.post(
-    "https://api.groq.com/openai/v1/chat/completions",
-    { model: "llama3-8b-8192", messages: [{ role: "user", content: s.prompt_base }], max_tokens: 60, temperature: 0.9 },
-    { headers: { Authorization: `Bearer ${s.groq_key}` } }
-  );
-  const roteiro = r.data.choices[0].message.content.trim().toUpperCase();
-  adicionarHistorico({ status: "Roteiro Criado", details: "IA gerou o roteiro.", roteiro });
-  return roteiro;
+  try {
+    const r = await axios.post(
+      "https://api.groq.com/openai/v1/chat/completions",
+      { model: "llama3-8b-8192", messages: [{ role: "user", content: s.prompt_base }], max_tokens: 60, temperature: 0.9 },
+      { headers: { Authorization: `Bearer ${s.groq_key}` }, timeout: 30000 }
+    );
+    const roteiro = r.data.choices[0].message.content.trim().toUpperCase();
+    adicionarHistorico({ status: "Roteiro Criado", details: "IA gerou o roteiro.", roteiro });
+    return roteiro;
+  } catch (e) {
+    const msg = e.response?.data?.error?.message || e.message || "Erro desconhecido";
+    throw new Error(`Groq: ${msg}`);
+  }
 }
 
 async function gerarAudio(texto, s) {
+  if (!s.eleven_key || !s.eleven_voice_id) throw new Error("ElevenLabs Key ou Voice ID não configurados.");
   adicionarHistorico({ status: "Gerando Audio", details: "Sintetizando voz no ElevenLabs..." });
-  const r = await axios.post(
-    `https://api.elevenlabs.io/v1/text-to-speech/${s.eleven_voice_id}`,
-    { text: texto, model_id: "eleven_multilingual_v2", voice_settings: { stability: 0.45, similarity_boost: 0.80 } },
-    { headers: { "xi-api-key": s.eleven_key, "Content-Type": "application/json" }, responseType: "arraybuffer" }
-  );
-  const audioPath = `./videos/audio_${Date.now()}.mp3`;
-  fs.writeFileSync(audioPath, Buffer.from(r.data));
-  adicionarHistorico({ status: "Audio Pronto", details: "Voz gerada com sucesso." });
-  return audioPath;
+  try {
+    const r = await axios.post(
+      `https://api.elevenlabs.io/v1/text-to-speech/${s.eleven_voice_id}`,
+      { text: texto, model_id: "eleven_multilingual_v2", voice_settings: { stability: 0.45, similarity_boost: 0.80 } },
+      { headers: { "xi-api-key": s.eleven_key, "Content-Type": "application/json" }, responseType: "arraybuffer", timeout: 60000 }
+    );
+    const audioPath = `./videos/audio_${Date.now()}.mp3`;
+    fs.writeFileSync(audioPath, Buffer.from(r.data));
+    adicionarHistorico({ status: "Audio Pronto", details: "Voz gerada com sucesso." });
+    return audioPath;
+  } catch (e) {
+    const msg = e.response ? `Status ${e.response.status}` : e.message;
+    throw new Error(`ElevenLabs: ${msg}`);
+  }
 }
 
 async function gerarVideo(texto, audioPath, s) {
@@ -93,33 +105,44 @@ async function gerarVideo(texto, audioPath, s) {
         adicionarHistorico({ status: "Video Pronto", details: "Vídeo renderizado com sucesso." });
         resolve(videoPath);
       })
-      .on("error", reject)
+      .on("error", (e) => reject(new Error(`FFmpeg: ${e.message}`)))
       .run();
   });
 }
 
 async function publicarInstagram(videoPath, texto, s) {
+  if (!s.instagram_token || !s.instagram_account_id || !s.server_domain) throw new Error("Configurações do Instagram incompletas.");
   adicionarHistorico({ status: "Publicando", details: "Enviando para o Instagram..." });
-  const videoUrl = `${s.server_domain}/videos/${path.basename(videoPath)}`;
-  const r1 = await axios.post(
-    `https://graph.facebook.com/v19.0/${s.instagram_account_id}/media`,
-    { media_type: "REELS", video_url: videoUrl, caption: texto, access_token: s.instagram_token }
-  );
-  const containerId = r1.data.id;
-  await new Promise(r => setTimeout(r, 30000));
-  await axios.post(
-    `https://graph.facebook.com/v19.0/${s.instagram_account_id}/media_publish`,
-    { creation_id: containerId, access_token: s.instagram_token }
-  );
-  adicionarHistorico({ status: "Publicado!", details: "Reels publicado com sucesso no Instagram! ✅" });
+  try {
+    const videoUrl = `${s.server_domain}/videos/${path.basename(videoPath)}`;
+    const r1 = await axios.post(
+      `https://graph.facebook.com/v19.0/${s.instagram_account_id}/media`,
+      { media_type: "REELS", video_url: videoUrl, caption: texto, access_token: s.instagram_token }
+    );
+    const containerId = r1.data.id;
+    await new Promise(r => setTimeout(r, 30000));
+    await axios.post(
+      `https://graph.facebook.com/v19.0/${s.instagram_account_id}/media_publish`,
+      { creation_id: containerId, access_token: s.instagram_token }
+    );
+    adicionarHistorico({ status: "Publicado!", details: "Reels publicado com sucesso no Instagram! ✅" });
+  } catch (e) {
+    const msg = e.response?.data?.error?.message || e.message;
+    throw new Error(`Instagram: ${msg}`);
+  }
 }
 
 async function executarFluxoCompleto() {
-  const s = lerSettings();
-  const roteiro = await gerarRoteiro(s);
-  const audioPath = await gerarAudio(roteiro, s);
-  const videoPath = await gerarVideo(roteiro, audioPath, s);
-  await publicarInstagram(videoPath, roteiro, s);
+  try {
+    const s = lerSettings();
+    const roteiro = await gerarRoteiro(s);
+    const audioPath = await gerarAudio(roteiro, s);
+    const videoPath = await gerarVideo(roteiro, audioPath, s);
+    await publicarInstagram(videoPath, roteiro, s);
+  } catch (e) {
+    console.error("Erro no fluxo:", e.message);
+    adicionarHistorico({ status: "Erro", details: e.message });
+  }
 }
 
 const PORT = process.env.PORT || 3000;
