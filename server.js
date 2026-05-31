@@ -130,10 +130,6 @@ async function gerarVideo(texto, audioPath, s) {
         resolve(videoPath);
       })
       .on("error", (e) => reject(new Error(`FFmpeg: ${e.message}`)))
-      .run();
-  });
-}
-
 async function publicarInstagram(videoPath, texto, s) {
   if (!s.instagram_token || !s.instagram_account_id || !s.server_domain) throw new Error("Configurações do Instagram incompletas.");
   adicionarHistorico({ status: "Publicando", details: "Enviando para o Instagram..." });
@@ -144,7 +140,25 @@ async function publicarInstagram(videoPath, texto, s) {
       { media_type: "REELS", video_url: videoUrl, caption: texto, access_token: s.instagram_token }
     );
     const containerId = r1.data.id;
-    await new Promise(r => setTimeout(r, 30000));
+
+    // Aguarda até 3 minutos verificando o status
+    let tentativas = 0;
+    let pronto = false;
+    while (tentativas < 18) {
+      await new Promise(r => setTimeout(r, 10000));
+      const status = await axios.get(
+        `https://graph.facebook.com/v19.0/${containerId}?fields=status_code&access_token=${s.instagram_token}`
+      );
+      adicionarHistorico({ status: "Publicando", details: `Instagram processando... (${(tentativas + 1) * 10}s)` });
+      if (status.data.status_code === "FINISHED") {
+        pronto = true;
+        break;
+      }
+      tentativas++;
+    }
+
+    if (!pronto) throw new Error("Instagram demorou demais para processar o vídeo.");
+
     await axios.post(
       `https://graph.facebook.com/v19.0/${s.instagram_account_id}/media_publish`,
       { creation_id: containerId, access_token: s.instagram_token }
@@ -153,6 +167,8 @@ async function publicarInstagram(videoPath, texto, s) {
   } catch (e) {
     const msg = e.response?.data?.error?.message || e.message;
     throw new Error(`Instagram: ${msg}`);
+  }
+}
   }
 }
 
