@@ -4,6 +4,7 @@ const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
 const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
+const { execSync } = require("child_process");
 const ffmpeg = require("fluent-ffmpeg");
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
