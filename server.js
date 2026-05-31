@@ -85,9 +85,7 @@ async function gerarAudio(texto, s) {
   adicionarHistorico({ status: "Audio Pronto", details: "Voz gerada com sucesso." });
   return audioPath;
 }
-async function gerarVideo(texto, audioPath, s) {
-  adicionarHistorico({ status: "Gerando Video", details: "Renderizando vídeo com FFmpeg..." });
-  async function baixarMusica() {
+async function baixarMusica() {
   const musicPath = "./videos/musica.mp3";
   if (fs.existsSync(musicPath)) return musicPath;
   const musicas = [
@@ -99,7 +97,7 @@ async function gerarVideo(texto, audioPath, s) {
   const r = await axios.get(url, { responseType: "arraybuffer" });
   fs.writeFileSync(musicPath, Buffer.from(r.data));
   return musicPath;
-  }
+}
   async function gerarVideo(texto, audioPath, s) {
   adicionarHistorico({ status: "Gerando Video", details: "Renderizando vídeo com FFmpeg..." });
   const videoPath = `./videos/video_${Date.now()}.mp4`;
