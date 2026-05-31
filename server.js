@@ -92,7 +92,7 @@ async function gerarVideo(texto, audioPath, s) {
   const videoPath = `./videos/video_${Date.now()}.mp4`;
   return new Promise((resolve, reject) => {
     ffmpeg()
-      .input("color=c=black:s=1080x1920:r=30")
+      .input("color=c=black:s=720x1280:r=24")
       .inputFormat("lavfi")
       .input(audioPath)
       .outputOptions(["-map 0:v", "-map 1:a", "-shortest", "-c:v libx264", "-c:a aac", "-pix_fmt yuv420p"])
