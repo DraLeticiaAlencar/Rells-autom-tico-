@@ -4,7 +4,7 @@
   "description": "Robo autonomo de Reels",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "pip3 install gtts --break-system-packages --quiet && node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
