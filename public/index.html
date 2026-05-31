@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reels AutoPilot PRO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#06030f;--surface:#0e0820;--border:#1e1535;--purple:#a855f7;--purple-dim:#7c3aed;--glow:rgba(168,85,247,0.25);--text:#e8e0f5;--muted:#6b5f85}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;background-image:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(120,40,200,.15),transparent)}
+        .container{max-width:1200px;margin:0 auto;padding:40px 24px}
+        header{display:flex;justify-content:space-between;align-items:center;margin-bottom:40px;padding-bottom:28px;border-bottom:1px solid var(--border)}
+        .logo{display:flex;align-items:center;gap:14px}
+        .logo-icon{width:48px;height:48px;background:linear-gradient(135deg,var(--purple-dim),var(--purple));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 30px var(--glow)}
+        .logo h1{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff}
+        .logo p{font-size:11px;color:var(--muted);margin-top:2px}
+        .btn-primary{background:linear-gradient(135deg,var(--purple-dim),var(--purple));color:#fff;border:none;padding:12px 24px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;box-shadow:0 0 20px var(--glow)}
+        .btn-primary:hover{transform:translateY(-1px);box-shadow:0 0 35px var(--glow)}
+        .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+        .col-2{grid-column:span 2}
+        @media(max-width:900px){.grid{grid-template-columns:1fr}.col-2{grid-column:span 1}}
+        .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px}
+        .card-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+        .card-title::before{content:'';display:inline-block;width:3px;height:14px;background:var(--purple);border-radius:2px}
+        label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:500}
+        input,textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s;margin-bottom:14px}
+        input:focus,textarea:focus{border-color:var(--purple-dim);box-shadow:0 0 0 3px rgba(124,58,237,.12)}
+        textarea{resize:vertical;min-height:80px}
+        .row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .schedule-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+        .sch-input{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--purple);font-family:'Syne',monospace;font-size:17px;font-weight:700;text-align:center;outline:none;width:100%}
+        .sch-input:focus{border-color:var(--purple);box-shadow:0 0 0 3px var(--glow)}
+        .toggle-btn{width:100%;padding:13px;border-radius:10px;border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all .3s;margin-bottom:10px}
+        .toggle-btn.off{background:var(--bg);border:1px solid var(--border);color:var(--muted)}
+        .toggle-btn.on{background:linear-gradient(135deg,#065f46,#059669);color:#fff;box-shadow:0 0 25px rgba(5,150,105,.3)}
+        .btn-save{width:100%;padding:11px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);font-family:'Syne',sans-serif;font-weight:600;font-size:12px;cursor:pointer;transition:all .2s}
+        .btn-save:hover{background:var(--border)}
+        .log-panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;min-height:380px;display:flex;flex-direction:column;margin-top:20px}
+        .log-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;max-height:500px}
+        .log-item{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;animation:fadeIn .3s ease}
+        .log-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+        .log-time{font-size:10px;color:var(--muted);font-family:monospace}
+        .badge{font-size:10px;font-weight:700;font-family:'Syne',sans-serif;padding:3px 8px;border-radius:20px}
+        .badge-ok{background:rgba(5,150,105,.12);color:#34d399}
+        .badge-warn{background:rgba(245,158,11,.12);color:#fbbf24}
+        .badge-err{background:rgba(239,68,68,.12);color:#f87171}
+        .log-details{font-size:12px;color:#c4b5d4}
+        .log-roteiro{font-size:11px;color:var(--muted);font-style:italic;margin-top:6px;padding:8px;background:rgba(168,85,247,.05);border-radius:6px;border-left:2px solid var(--purple-dim)}
+        .log-link{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--purple);text-decoration:none;margin-top:6px}
+        .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:var(--muted);text-align:center;padding:40px}
+        .empty-state .icon{font-size:36px;margin-bottom:12px;opacity:.4}
+        .empty-state p{font-size:13px;line-height:1.7}
+        .pulse{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#34d399;margin-bottom:14px}
+        .pulse-dot{width:7px;height:7px;background:#34d399;border-radius:50%;animation:pulse 2s infinite}
+        @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(52,211,153,.4)}50%{opacity:.6;box-shadow:0 0 0 5px rgba(52,211,153,0)}}
+        .pipeline{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-bottom:28px}
+        .step-badge{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:11px;color:var(--muted);font-family:'Syne',sans-serif;font-weight:600;white-space:nowrap}
+        .step-arrow{color:var(--border);font-size:14px;margin:0 2px}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+        code{color:var(--purple);font-size:11px;background:rgba(168,85,247,.08);padding:2px 6px;border-radius:4px}
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="logo">
+            <div class="logo-icon">🤖</div>
+            <div>
+                <h1>Reels AutoPilot <span style="color:var(--purple)">PRO</span></h1>
+                <p>Robô autônomo — Railway 24/7</p>
+            </div>
+        </div>
+        <button class="btn-primary" onclick="dispararImediato()">⚡ Gerar e Postar Agora</button>
+    </header>
+    <div class="pipeline">
+        <span class="step-badge">① IA gera roteiro</span><span class="step-arrow">→</span>
+        <span class="step-badge">② ElevenLabs cria voz</span><span class="step-arrow">→</span>
+        <span class="step-badge">③ Renderiza vídeo</span><span class="step-arrow">→</span>
+        <span class="step-badge">④ Posta no Instagram</span><span class="step-arrow">→</span>
+        <span class="step-badge" style="color:var(--purple);border-color:var(--purple-dim)">⑤ Publicado ✓</span>
+    </div>
+    <div class="grid">
+        <div class="col-2" style="display:flex;flex-direction:column;gap:20px">
+            <div class="card">
+                <div class="card-title">⚙️ Configurações das APIs</div>
+                <div class="row-2">
+                    <div><label>OpenAI API Key</label><input type="password" id="openai_key" placeholder="sk-..."></div>
+                    <div><label>ElevenLabs API Key</label><input type="password" id="eleven_key" placeholder="Sua chave ElevenLabs"></div>
+                </div>
+                <div class="row-2">
+                    <div><label>ElevenLabs Voice ID</label><input type="text" id="eleven_voice" placeholder="ID da voz"></div>
+                    <div><label>Domínio Railway</label><input type="text" id="server_domain" placeholder="https://seu-app.railway.app"></div>
+                </div>
+                <label>Prompt da IA — Defina o Nicho</label>
+                <textarea id="prompt_base" rows="3" placeholder="Crie um gancho poderoso de 1 frase para Reels sobre autoestima feminina. Máximo 12 palavras. Responda só com a frase."></textarea>
+            </div>
+            <div class="card">
+                <div class="card-title">📸 Meta API — Instagram</div>
+                <div class="row-2">
+                    <div><label>Access Token</label><input type="password" id="instagram_token" placeholder="Token de longa duração"></div>
+                    <div><label>Instagram Account ID</label><input type="text" id="instagram_id" placeholder="ID numérico"></div>
+                </div>
+                <p style="font-size:11px;color:var(--muted);margin-top:-6px">💡 Permissões: <code>instagram_basic</code> <code>instagram_content_publish</code> <code>pages_read_engagement</code></p>
+            </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:20px">
+            <div class="card">
+                <div class="card-title">🕒 Horários Diários</div>
+                <div class="schedule-grid" id="schedules_inputs"></div>
+            </div>
+            <div class="card">
+                <div class="card-title">⚡ Automação</div>
+                <p style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6">Quando ativo, o robô executa o fluxo completo automaticamente nos horários definidos.</p>
+                <button id="btn_ativacao" class="toggle-btn off" onclick="toggleAutomacao()">🔴 Automação Pausada</button>
+                <button class="btn-save" onclick="salvarConfiguracoes()">💾 Salvar Configurações</button>
+            </div>
+        </div>
+    </div>
+    <div class="log-panel">
+        <div class="card-title" style="margin-bottom:14px">🗂️ Registro de Atividade em Tempo Real</div>
+        <div class="pulse" id="live_indicator" style="display:none"><div class="pulse-dot"></div> Monitorando ao vivo</div>
+        <div class="log-list" id="logs_container">
+            <div class="empty-state"><div class="icon">🤖</div><p>Nenhuma atividade ainda.<br>Configure as APIs e clique em <strong>"Gerar e Postar Agora"</strong>.</p></div>
+        </div>
+    </div>
+</div>
+<script>
+let cfg={};
+async function carregarDados(){
+    try{
+        const res=await fetch("/api/settings");cfg=await res.json();
+        document.getElementById("openai_key").value=cfg.openai_key||"";
+        document.getElementById("eleven_key").value=cfg.eleven_key||"";
+        document.getElementById("eleven_voice").value=cfg.eleven_voice_id||"";
+        document.getElementById("server_domain").value=cfg.server_domain||"";
+        document.getElementById("prompt_base").value=cfg.prompt_base||"";
+        document.getElementById("instagram_token").value=cfg.instagram_token||"";
+        document.getElementById("instagram_id").value=cfg.instagram_account_id||"";
+        const div=document.getElementById("schedules_inputs");div.innerHTML="";
+        (cfg.schedules||["08:00","12:00","17:00","21:00"]).forEach((h,i)=>{
+            div.innerHTML+=`<input type="text" id="sch_${i}" value="${h}" class="sch-input">`;
+        });
+        atualizarBotao(cfg.automation_active);
+    }catch(e){console.error(e);}
+}
+function atualizarBotao(ativo){
+    const btn=document.getElementById("btn_ativacao");
+    btn.className="toggle-btn "+(ativo?"on":"off");
+    btn.innerText=ativo?"🟢 Automação Ativa (24/7)":"🔴 Automação Pausada";
+    document.getElementById("live_indicator").style.display=ativo?"flex":"none";
+}
+async function toggleAutomacao(){cfg.automation_active=!cfg.automation_active;await salvarConfiguracoes(false);atualizarBotao(cfg.automation_active);}
+async function salvarConfiguracoes(feedback=true){
+    cfg.openai_key=document.getElementById("openai_key").value;
+    cfg.eleven_key=document.getElementById("eleven_key").value;
+    cfg.eleven_voice_id=document.getElementById("eleven_voice").value;
+    cfg.server_domain=document.getElementById("server_domain").value;
+    cfg.prompt_base=document.getElementById("prompt_base").value;
+    cfg.instagram_token=document.getElementById("instagram_token").value;
+    cfg.instagram_account_id=document.getElementById("instagram_id").value;
+    cfg.schedules=[];
+    for(let i=0;i<4;i++){const e=document.getElementById(`sch_${i}`);if(e)cfg.schedules.push(e.value);}
+    const res=await fetch("/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(cfg)});
+    const d=await res.json();if(feedback)alert(d.message);
+}
+async function dispararImediato(){
+    await salvarConfiguracoes(false);
+    await fetch("/api/force-trigger",{method:"POST"});
+    alert("🚀 Fluxo iniciado! Acompanhe o status abaixo.");
+    setTimeout(atualizarLogs,2000);
+}
+function badgeClass(status){
+    const s=(status||"").toLowerCase();
+    if(s.includes("publicado")||s.includes("sucesso")||s.includes("pronto"))return"badge-ok";
+    if(s.includes("erro"))return"badge-err";
+    return"badge-warn";
+}
+async function atualizarLogs(){
+    try{
+        const res=await fetch("/api/history");const logs=await res.json();
+        const c=document.getElementById("logs_container");
+        if(!logs||!logs.length){c.innerHTML=`<div class="empty-state"><div class="icon">🤖</div><p>Nenhuma atividade ainda.</p></div>`;return;}
+        c.innerHTML=logs.map(l=>`
+            <div class="log-item">
+                <div class="log-header"><span class="log-time">${l.timestamp||""}</span><span class="badge ${badgeClass(l.status)}">${l.status||""}</span></div>
+                <div class="log-details">${l.details||""}</div>
+                ${l.roteiro?`<div class="log-roteiro">"${l.roteiro}"</div>`:""}
+                ${l.video_url?`<a href="${l.video_url}" target="_blank" class="log-link">🎬 Ver no Instagram →</a>`:""}
+            </div>`).join("");
+    }catch(e){console.error(e);}
+}
+setInterval(atualizarLogs,5000);
+carregarDados();
+atualizarLogs();
+</script>
+</body>
+</html>
