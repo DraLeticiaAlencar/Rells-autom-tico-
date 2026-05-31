@@ -92,13 +92,13 @@ async function gerarVideo(texto, audioPath, s) {
   const videoPath = `./videos/video_${Date.now()}.mp4`;
   return new Promise((resolve, reject) => {
     ffmpeg()
-      .input(audioPath)
-      .inputOptions(["-f lavfi"])
       .input("color=c=black:s=1080x1920:r=30")
+      .inputFormat("lavfi")
+      .input(audioPath)
       .complexFilter([
-        `drawtext=text='${texto.replace(/'/g, "\\'")}':fontcolor=white:fontsize=60:x=(w-text_w)/2:y=(h-text_h)/2:font=Arial:fontweight=bold:borderw=3:bordercolor=black`
+        `drawtext=text='${texto.replace(/'/g, " ")}':fontcolor=white:fontsize=60:x=(w-text_w)/2:y=(h-text_h)/2:fontweight=bold:borderw=3:bordercolor=black`
       ])
-      .outputOptions(["-map 1:v", "-map 0:a", "-shortest", "-c:v libx264", "-c:a aac", "-pix_fmt yuv420p"])
+      .outputOptions(["-map 0:v", "-map 1:a", "-shortest", "-c:v libx264", "-c:a aac", "-pix_fmt yuv420p"])
       .output(videoPath)
       .on("end", () => {
         adicionarHistorico({ status: "Video Pronto", details: "Vídeo renderizado com sucesso." });
