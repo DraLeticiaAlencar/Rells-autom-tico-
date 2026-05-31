@@ -80,10 +80,8 @@ async function gerarRoteiro(s) {
 async function gerarAudio(texto, s) {
   adicionarHistorico({ status: "Gerando Audio", details: "Sintetizando voz..." });
   const audioPath = `./videos/audio_${Date.now()}.mp3`;
-  const gTTS = require("node-gtts")("pt");
-  await new Promise((resolve, reject) => {
-    gTTS.save(audioPath, texto, (err) => err ? reject(err) : resolve());
-  });
+  const { execSync } = require("child_process");
+  execSync(`npx edge-tts --voice pt-BR-FranciscaNeural --text "${texto.replace(/"/g, ' ')}" --write-media ${audioPath}`, { timeout: 30000 });
   adicionarHistorico({ status: "Audio Pronto", details: "Voz gerada com sucesso." });
   return audioPath;
 }
