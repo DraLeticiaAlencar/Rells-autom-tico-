@@ -87,6 +87,19 @@ async function gerarAudio(texto, s) {
 }
 async function gerarVideo(texto, audioPath, s) {
   adicionarHistorico({ status: "Gerando Video", details: "Renderizando vídeo com FFmpeg..." });
+  async function baixarMusica() {
+  const musicPath = "./videos/musica.mp3";
+  if (fs.existsSync(musicPath)) return musicPath;
+  const musicas = [
+    "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3",
+    "https://cdn.pixabay.com/download/audio/2021/11/25/audio_5bac3aa40c.mp3",
+    "https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3"
+  ];
+  const url = musicas[Math.floor(Math.random() * musicas.length)];
+  const r = await axios.get(url, { responseType: "arraybuffer" });
+  fs.writeFileSync(musicPath, Buffer.from(r.data));
+  return musicPath;
+  }
   async function gerarVideo(texto, audioPath, s) {
   adicionarHistorico({ status: "Gerando Video", details: "Renderizando vídeo com FFmpeg..." });
   const videoPath = `./videos/video_${Date.now()}.mp4`;
