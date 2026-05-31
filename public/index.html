@@ -152,7 +152,7 @@ function atualizarBotao(ativo){
 }
 async function toggleAutomacao(){cfg.automation_active=!cfg.automation_active;await salvarConfiguracoes(false);atualizarBotao(cfg.automation_active);}
 async function salvarConfiguracoes(feedback=true){
-    cfg.openai_key=document.getElementById("openai_key").value;
+    cfg.groq_key=document.getElementById("groq_key").value
     cfg.eleven_key=document.getElementById("eleven_key").value;
     cfg.eleven_voice_id=document.getElementById("eleven_voice").value;
     cfg.server_domain=document.getElementById("server_domain").value;
