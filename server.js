@@ -102,24 +102,28 @@ async function baixarMusica() {
 async function gerarVideo(texto, audioPath, s) {
   adicionarHistorico({ status: "Gerando Video", details: "Renderizando vídeo com FFmpeg..." });
   const videoPath = `./videos/video_${Date.now()}.mp4`;
-  const textoLegenda = texto.replace(/'/g, " ").replace(/:/g, "\\:");
+  const textoLegenda = texto
+    .replace(/'/g, " ")
+    .replace(/:/g, "\\:")
+    .replace(/"/g, " ")
+    .replace(/,/g, "\\,");
   const musicPath = await baixarMusica();
   return new Promise((resolve, reject) => {
     ffmpeg()
-      .input("color=c=black:s=720x1280:r=24")
+      .input("color=c=black:s=720x1280:r=24:d=30")
       .inputFormat("lavfi")
       .input(audioPath)
       .input(musicPath)
       .outputOptions([
-  "-filter_complex",
-  `[1:a]volume=1.0[a1];[2:a]volume=0.3[a2];[a1][a2]amix=inputs=2[aout];[0:v]drawtext=text='${textoLegenda}':fontcolor=white:fontsize=40:fontfamily=Arial:x=(w-text_w)/2:y=h-150:box=1:boxcolor=black@0.6:boxborderw=10[vout]`,
-  "-map", "[vout]",
-  "-map", "[aout]",
-  "-shortest",
-  "-c:v", "libx264",
-  "-c:a", "aac",
-  "-pix_fmt", "yuv420p"
-])
+        "-filter_complex",
+        `[1:a]volume=1.0[a1];[2:a]volume=0.3[a2];[a1][a2]amix=inputs=2:duration=shortest[aout];[0:v]drawtext=text='${textoLegenda}':fontcolor=white:fontsize=45:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=black@0.6:boxborderw=15[vout]`,
+        "-map", "[vout]",
+        "-map", "[aout]",
+        "-t", "30",
+        "-c:v", "libx264",
+        "-c:a", "aac",
+        "-pix_fmt", "yuv420p"
+      ])
       .output(videoPath)
       .on("end", () => {
         adicionarHistorico({ status: "Video Pronto", details: "Vídeo renderizado com sucesso." });
