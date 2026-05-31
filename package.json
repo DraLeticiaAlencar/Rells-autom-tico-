@@ -16,6 +16,6 @@
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "fluent-ffmpeg": "^2.1.2",
     "node-gtts": "^1.0.3",
-    "edge-tts": "^1.0.3"
+    ""edge-tts": "^2.1.3""
   }
 }
