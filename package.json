@@ -1,7 +1,7 @@
 {
   "name": "reels-autopilot",
   "version": "1.0.0",
-  "description": "Robô autônomo de Reels",
+  "description": "Robo autonomo de Reels",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
