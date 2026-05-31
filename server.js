@@ -95,9 +95,6 @@ async function gerarVideo(texto, audioPath, s) {
       .input("color=c=black:s=1080x1920:r=30")
       .inputFormat("lavfi")
       .input(audioPath)
-      .complexFilter([
-        `drawtext=text='${texto.replace(/'/g, " ")}':fontcolor=white:fontsize=60:x=(w-text_w)/2:y=(h-text_h)/2:fontweight=bold:borderw=3:bordercolor=black`
-      ])
       .outputOptions(["-map 0:v", "-map 1:a", "-shortest", "-c:v libx264", "-c:a aac", "-pix_fmt yuv420p"])
       .output(videoPath)
       .on("end", () => {
