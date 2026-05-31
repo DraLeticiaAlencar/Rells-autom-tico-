@@ -87,13 +87,24 @@ async function gerarAudio(texto, s) {
 }
 async function gerarVideo(texto, audioPath, s) {
   adicionarHistorico({ status: "Gerando Video", details: "Renderizando vídeo com FFmpeg..." });
+  async function gerarVideo(texto, audioPath, s) {
+  adicionarHistorico({ status: "Gerando Video", details: "Renderizando vídeo com FFmpeg..." });
   const videoPath = `./videos/video_${Date.now()}.mp4`;
+  const textoLegenda = texto.replace(/'/g, " ").replace(/:/g, "\\:");
   return new Promise((resolve, reject) => {
     ffmpeg()
       .input("color=c=black:s=720x1280:r=24")
       .inputFormat("lavfi")
       .input(audioPath)
-      .outputOptions(["-map 0:v", "-map 1:a", "-shortest", "-c:v libx264", "-c:a aac", "-pix_fmt yuv420p"])
+      .outputOptions([
+        "-map 0:v",
+        "-map 1:a",
+        "-shortest",
+        "-c:v libx264",
+        "-c:a aac",
+        "-pix_fmt yuv420p",
+        `-vf drawtext=text='${textoLegenda}':fontcolor=white:fontsize=40:x=(w-text_w)/2:y=h-100:box=1:boxcolor=black@0.5:boxborderw=10`
+      ])
       .output(videoPath)
       .on("end", () => {
         adicionarHistorico({ status: "Video Pronto", details: "Vídeo renderizado com sucesso." });
@@ -103,8 +114,6 @@ async function gerarVideo(texto, audioPath, s) {
       .run();
   });
 }
-
-async function publicarInstagram(videoPath, texto, s) {
   if (!s.instagram_token || !s.instagram_account_id || !s.server_domain) throw new Error("Configurações do Instagram incompletas.");
   adicionarHistorico({ status: "Publicando", details: "Enviando para o Instagram..." });
   try {
